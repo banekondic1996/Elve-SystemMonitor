@@ -24,7 +24,9 @@ To use all functions you have to start app as root (the unpacked version)
 -CPU and Network limiting not tested, might not be working <br>
 -GPU usage per process<br>
 -Make it more efficent by writing own CLI app that will return data<br>
--View graphs independently with more information (CPU, GPU, Network, Disk, RAM) <br>
+-View graphs independently with more information (CPU, GPU, Network, Disk, RAM)<br>
+-View disk usage per disk
+<br>
 <br>
 This version needs some fixing, it's not final. Not everything is added still.<br>
 Logo was as idea of heart pulse, bright red to add seriousness and cpu logo to resemple electronics. <br> 
