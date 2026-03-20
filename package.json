@@ -2,7 +2,7 @@
     "name": "ElveSystemMonitor",
     "version": "1.0.0",
     "author": "Bane Kondic",
-    "main": "main.js",
+    "main": "index.html",
     "window": {
         "title": "Elve System Monitor",
         "width": 1200,
@@ -20,7 +20,6 @@
       "files": [
         "!**/node_modules/*/{test,__tests__,*.md,*.map,*.log}",
         "!**/node_modules/.bin",
-        "dist/**/*",
         "Elve Monitor 512.png",
         "main.js",
         "index.html",
@@ -40,8 +39,8 @@
       "nw": "^0.80.0"
     },
     "scripts": {
-      "start nw": "nw .",
-      "start electron": "electron .",
+      "startnw": "nw .",
+      "startelectron": "electron .",
       "dist": "electron-builder"
     }
   }
