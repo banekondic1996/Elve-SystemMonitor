@@ -1,0 +1,1767 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Elve System Monitor</title>
+<style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: #1e1e1e;
+    color: #e0e0e0;
+    overflow: hidden;
+}
+
+.container {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+}
+
+.header {
+    background: #252526;
+    padding: 15px 20px;
+    border-bottom: 1px solid #3e3e42;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-radius: 20px;
+    margin: 10px;
+    margin-bottom: 0px;
+}
+
+.header h1 {
+    font-size: 18px;
+    font-weight: 800;
+}
+
+.header-actions {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.btn {
+    padding: 8px 16px;
+    color: #fff;
+    background: #d2861652;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 13px;
+    transition: background 0.2s;
+}
+
+.btn:hover {
+    background: #d28716d0;
+}
+
+.btn:disabled {
+    background: #3e3e42;
+    cursor: not-allowed;
+    opacity: 0.5;
+}
+
+.btn-danger {
+    background: #502f2f;
+}
+
+.btn-danger:hover {
+    background: #b93232;
+}
+
+.btn-small {
+    padding: 4px 10px;
+    font-size: 11px;
+}
+
+.main-content {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+}
+
+.sidebar {
+    width: 140px;
+    background: #252526;
+    border-radius: 20px;
+    margin: 10px;
+    border-right: 1px solid #3e3e42;
+    padding: 4px 0;
+}
+
+.sidebar-item {
+    padding: 12px 20px;
+    cursor: pointer;
+    transition: background 0.2s;
+    font-size: 14px;
+    border-radius: 8px;
+    margin: 4px 8px;
+}
+
+.sidebar-item:hover {
+    background: #2d2d30;
+}
+
+.sidebar-item.active {
+    background: #d2861652;
+    border-left: none;
+}
+
+.content-area {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.system-stats {
+    display: flex;
+    contain: content;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 150px));
+    gap: 12px;
+    padding: 8px;
+    border-radius: 20px;
+    margin: 20px;
+    margin-bottom: 0px;
+    background: #2d2d30;
+    border-bottom: 1px solid #3e3e42;
+    justify-content: center;
+}
+
+.stat-card {
+    min-width: fit-content;
+    max-height: fit-content;
+    text-align: center;
+    background: #1e1e1e;
+    padding: 15px;
+    border-radius: 10px;
+    border: 1px solid #3e3e42;
+}
+
+.stat-card h3 {
+    font-size: 12px;
+    color: #999;
+    margin-bottom: 8px;
+}
+
+.stat-value {
+    font-size: 18px;
+    font-weight: 600;
+    color: #d28616;
+}
+
+.stat-label {
+    font-size: 11px;
+    color: #999;
+    margin-top: 4px;
+}
+
+.process-table-container {
+    flex: 1;
+    overflow: auto;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+}
+
+.search-container {
+    margin-bottom: 15px;
+}
+
+#process-search, #service-search {
+    width: 100%;
+    padding: 10px 15px;
+    background: #252526;
+    border: 1px solid #3e3e42;
+    border-radius: 4px;
+    color: #e0e0e0;
+    font-size: 14px;
+    outline: none;
+}
+
+#process-search:focus, #service-search:focus {
+    border-color: #0e639c;
+}
+
+table {
+    width: 100%;
+    font-size: 14px;
+    border-radius: 10px;
+}
+
+thead {
+    position: sticky;
+    top: 0;
+    background: #252526;
+    z-index: 10;
+    border-radius: 20px;
+}
+
+th {
+    text-align: left;
+    padding: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    user-select: none;
+}
+
+th:hover {
+    background: #2d2d30;
+}
+
+td {
+    padding: 1px 12px;
+    margin:2px;
+    border-bottom: 1px solid #2d2d30;
+}
+
+tbody tr {
+    transition: background 0.15s;
+    cursor: pointer;
+    border-radius:10px;
+}
+
+tbody tr:hover {
+    background: #2d2d30;
+}
+
+tbody tr.selected {
+    background: #d2861652 !important;
+}
+
+.cpu-cell, .memory-cell {
+    padding: 6px 6px !important;
+    border-radius:3px;
+    margin:2px;
+    font-weight: 600;
+}
+
+.context-menu {
+    position: fixed;
+    background: #252526;
+    border: 1px solid #3e3e42;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+    display: none;
+    min-width: 180px;
+}
+
+.context-menu-item {
+    padding: 8px 20px;
+    cursor: pointer;
+    transition: background 0.15s;
+    font-size: 13px;
+}
+
+.context-menu-item:hover {
+    background: #d2861652;
+}
+
+.context-menu-item.danger:hover {
+    background: #c52a2a;
+    border-radius: 10px 10px 0px 0px;
+
+}
+
+.context-menu-separator {
+    height: 1px;
+    background: #3e3e42;
+    margin: 4px 0;
+}
+
+.chart-container {
+    padding: 20px;
+    display: flex;
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    gap: 20px;
+    overflow: auto;
+    flex-wrap: wrap;
+    flex-direction: row;
+    justify-content: center;
+}
+
+.chart-card {
+    width: 300px;
+    height: 200px;
+    background: #252526;
+    padding: 20px;
+    border-radius: 6px;
+    border: 1px solid #3e3e42;
+    position: relative;
+}
+
+.chart-card h3 {
+    margin-bottom: 15px;
+    font-size: 16px;
+    color: #e0e0e0;
+}
+
+.chart-tooltip {
+    position: absolute;
+    background: rgba(37, 37, 38, 0.95);
+    border: 1px solid #3e3e42;
+    border-radius: 4px;
+    padding: 8px 12px;
+    pointer-events: none;
+    display: none;
+    z-index: 1000;
+    font-size: 12px;
+    color: #e0e0e0;
+    white-space: nowrap;
+}
+
+canvas {
+    display: block;
+    max-width: 100%;
+    width: 100%;
+    height: 120%;
+    margin-top: -30px;
+}
+
+.hidden {
+    display: none !important;
+}
+
+.log-entry {
+    padding: 10px;
+    margin-bottom: 8px;
+    background: #252526;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.log-entry:hover {
+    background: #2d2d30;
+}
+
+.log-entry.selected {
+    background: #d2861652;
+}
+
+.log-entry-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 4px;
+}
+
+.log-entry-app {
+    font-weight: 400;
+    color: #4ec9b0;
+}
+
+.log-entry-time {
+    font-size: 11px;
+    color: ffffff;
+}
+
+.log-entry-message {
+    font-size: 12px;
+    color: #e0e0e0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.log-details {
+    margin-top: 15px;
+    padding: 12px;
+    background: #1e1e1e;
+    border: 1px solid #3e3e42;
+    border-radius: 4px;
+    font-family: 'Courier New', monospace;
+    font-size: 12px;
+    max-height: 300px;
+    overflow: auto;
+    white-space: pre-wrap;
+}
+
+.network-entry {
+    padding: 8px 12px;
+    color: #ffffff;
+    background: #252526;
+    border-radius: 4px;
+    margin-bottom: 6px;
+    font-family: 'Courier New', monospace;
+    font-size: 11px;
+}
+
+.network-entry-header {
+    display: flex;
+    color: #9c750e;
+    justify-content: space-between;
+    margin-bottom: 4px;
+    font-weight: 600;
+}
+
+.network-entry-details {
+    color: #ffffff;
+    font-size: 14px;
+}
+
+.btn.enabled {
+    background: #7e0f0f;
+}
+
+.btn.disabled {
+    background: #1d7e24;
+}
+
+.refresh-indicator {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    background: #4ec9b0;
+    border-radius: 50%;
+    margin-left: 10px;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+}
+
+.service-item {
+    scroll-margin-top: 20px;
+}
+
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 2000;
+}
+
+.modal.show {
+    display: flex;
+}
+
+.modal-content {
+    background: #252526;
+    border: 1px solid #3e3e42;
+    border-radius: 6px;
+    padding: 24px;
+    min-width: 400px;
+    max-width: 600px;
+    max-height: 80vh;
+    overflow: auto;
+}
+
+.modal-header {
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 20px;
+    color: #e0e0e0;
+}
+
+.modal-body {
+    margin-bottom: 20px;
+}
+
+.form-group {
+    margin-bottom: 16px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 6px;
+    font-size: 13px;
+    color: #999;
+}
+
+.form-group input,
+.form-group select {
+    width: 100%;
+    padding: 8px 12px;
+    background: #1e1e1e;
+    border: 1px solid #3e3e42;
+    border-radius: 4px;
+    color: #e0e0e0;
+    font-size: 13px;
+    outline: none;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+    border-color: #0e639c;
+}
+
+.modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+.file-list {
+    background: #1e1e1e;
+    border: 1px solid #3e3e42;
+    border-radius: 4px;
+    padding: 12px;
+    max-height: 400px;
+    overflow: auto;
+    font-family: 'Courier New', monospace;
+    font-size: 12px;
+}
+
+.file-item {
+    padding: 4px 0;
+    border-bottom: 1px solid #2d2d30;
+}
+
+.file-item:last-child {
+    border-bottom: none;
+}
+
+.startup-list {
+    background: #1e1e1e;
+    border: 1px solid #3e3e42;
+    border-radius: 4px;
+    padding: 12px;
+}
+
+.startup-item, .cron-item, .service-item {
+    padding: 12px;
+    margin-bottom: 8px;
+    background: #252526;
+    border-radius: 4px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.startup-item-info, .cron-item-info, .service-item-info {
+    flex: 1;
+    contain: inline-size;
+}
+
+.startup-item-name, .service-item-name {
+    font-weight: 600;
+    margin-bottom: 4px;
+}
+
+.startup-item-command, .cron-item-command {
+    font-size: 14px;
+    color: #999;
+    font-family: 'Courier New', monospace;
+    contain: content;
+}
+
+.cron-item-schedule {
+    font-family: 'Courier New', monospace;
+    font-size: 14px;
+    color: #4ec9b0;
+    margin-bottom: 4px;
+}
+
+.service-item-status {
+    font-size: 12px;
+    margin-bottom: 4px;
+}
+
+.service-item-status.active {
+    color: #4ec9b0;
+}
+
+.service-item-status.inactive {
+    color: #999;
+}
+
+.service-item-status.failed {
+    color: #c52a2a;
+}
+
+.service-actions {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.user-select {
+    margin-bottom: 15px;
+}
+
+.user-select select {
+    width: 100%;
+    padding: 8px 12px;
+    background: #1e1e1e;
+    border: 1px solid #3e3e42;
+    border-radius: 4px;
+    color: #e0e0e0;
+    font-size: 13px;
+}
+</style>
+</head>
+<body>
+<div class="container">
+<div class="header">
+    <h1>Elve System Monitor</h1>
+    <div class="header-actions">
+        <button class="btn btn-danger" id="kill-selected-btn" disabled>Kill Selected Process</button>
+    </div>
+</div>
+
+<div class="main-content">
+    <div class="sidebar">
+        <div class="sidebar-item active" data-view="processes">Processes</div>
+        <div class="sidebar-item" data-view="performance">Performance</div>
+        <div class="sidebar-item" data-view="network">Network</div>
+        <div class="sidebar-item" data-view="startup">Startup Apps</div>
+        <div class="sidebar-item" data-view="crontab">Cron Jobs</div>
+        <div class="sidebar-item" data-view="services">Services</div>
+        <div class="sidebar-item" data-view="logs">System Logs</div>
+    </div>
+
+    <div class="content-area">
+        <div class="system-stats">
+            <div class="stat-card">
+                <h3>CPU</h3>
+                <div class="stat-value" id="cpu-stat">0%</div>
+                <div class="stat-label">CPU usage</div>
+            </div>
+            <div class="stat-card">
+                <h3>GPU</h3>
+                <div class="stat-value" id="gpu-stat">0%</div>
+                <div class="stat-label">GPU usage</div>
+            </div>
+            <div class="stat-card">
+                <h3>MEMORY</h3>
+                <div class="stat-value" id="memory-stat">0%</div>
+                <div class="stat-label" id="memory-detail">0/0 GB</div>
+            </div>
+            <div class="stat-card">
+                <h3>DISK</h3>
+                <div class="stat-value" id="disk-stat">0%</div>
+                <div class="stat-label" id="disk-detail">0/0 GB</div>
+            </div>
+            <div class="stat-card">
+                <h3>NETWORK</h3>
+                <div class="stat-value" id="network-stat">0 KB/s</div>
+                <div class="stat-label" id="network-upload">0 KB/s</div>
+            </div>
+            <div class="stat-card">
+                <h3>TEMP</h3>
+                <div class="stat-value" id="temp-stat">0°C</div>
+                <div class="stat-label" id="temp-detail">CPU temperature</div>
+            </div>
+        </div>
+
+        <div id="processes-view" class="process-table-container">
+            <div class="search-container">
+                <input type="text" id="process-search" placeholder="Search processes..." />
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th data-sort="pid">PID</th>
+                        <th data-sort="name">Name</th>
+                        <th data-sort="cpu">CPU %</th>
+                        <th data-sort="memory">Memory</th>
+                        <th data-sort="gpu">GPU %</th>
+                        <th data-sort="vram">VRAM</th>
+                        <th data-sort="user">User</th>
+                    </tr>
+                </thead>
+                <tbody id="process-tbody">
+                    <tr><td colspan="7" style="text-align: center; padding: 40px;">Loading processes...</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div id="performance-view" class="chart-container hidden">
+            <div class="chart-card">
+                <h3>CPU Usage History (%)</h3>
+                <canvas id="cpu-chart" width="800" height="400"></canvas>
+                <div class="chart-tooltip" id="cpu-tooltip"></div>
+            </div>
+            <div class="chart-card">
+                <h3>Memory Usage History (%)</h3>
+                <canvas id="memory-chart" width="800" height="400"></canvas>
+                <div class="chart-tooltip" id="memory-tooltip"></div>
+            </div>
+            <div class="chart-card">
+                <h3>Network Download (KB/s)</h3>
+                <canvas id="network-down-chart" width="800" height="400"></canvas>
+                <div class="chart-tooltip" id="network-down-tooltip"></div>
+            </div>
+            <div class="chart-card">
+                <h3>Network Upload (KB/s)</h3>
+                <canvas id="network-up-chart" width="800" height="400"></canvas>
+                <div class="chart-tooltip" id="network-up-tooltip"></div>
+            </div>
+            <div class="chart-card">
+                <h3>Temperature History (°C)</h3>
+                <canvas id="temp-chart" width="800" height="400"></canvas>
+                <div class="chart-tooltip" id="temp-tooltip"></div>
+            </div>
+        </div>
+
+        <div id="startup-view" class="process-table-container hidden">
+            <h3 style="margin-bottom: 15px;">Startup Applications</h3>
+            <div class="startup-list" id="startup-list">
+                <p style="text-align: center; padding: 40px;">Loading startup applications...</p>
+            </div>
+        </div>
+
+        <div id="crontab-view" class="process-table-container hidden">
+            <h3 style="margin-bottom: 15px;">Cron Jobs</h3>
+            <div class="user-select">
+                <select id="cron-user-select">
+                    <option value="">Loading users...</option>
+                </select>
+            </div>
+            <div class="startup-list" id="cron-list">
+                <p style="text-align: center; padding: 40px;">Select a user to view cron jobs...</p>
+            </div>
+        </div>
+
+        <div id="services-view" class="process-table-container hidden">
+            <h3 style="margin-bottom: 15px;">System Services</h3>
+            <div class="search-container">
+                <input type="text" id="service-search" placeholder="Search services..." />
+            </div>
+            <div class="startup-list" id="services-list">
+                <p style="text-align: center; padding: 40px;">Loading services...</p>
+            </div>
+        </div>
+
+        <div id="logs-view" class="process-table-container hidden">
+            <h3 style="margin-bottom: 15px;">System Logs (journald)</h3>
+            <div class="startup-list" id="logs-list" style="max-height: 40%; overflow: auto;">
+                <p style="text-align: center; padding: 40px;">Loading logs...</p>
+            </div>
+            <div class="log-details" id="log-details" style="display: none;">
+                Select a log entry to view details
+            </div>
+        </div>
+
+        <div id="network-view" class="process-table-container hidden">
+            <h3 style="margin-bottom: 15px;">Network Connections (ss -tupn)</h3>
+            <button class="btn" id="refresh-network" style="margin-bottom: 15px;">Refresh</button>
+            <div class="startup-list" id="network-list">
+                <p style="text-align: center; padding: 40px;">Loading network connections...</p>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+
+<div class="context-menu" id="context-menu">
+<div class="context-menu-item danger" id="kill-process">Kill Process</div>
+<div class="context-menu-separator"></div>
+<div class="context-menu-item" id="limit-resources">Limit Resources</div>
+<div class="context-menu-item" id="schedule-process">Schedule Task</div>
+<div class="context-menu-item" id="startup-process">Add to Startup</div>
+<div class="context-menu-separator"></div>
+<div class="context-menu-item" id="view-files">View Open Files</div>
+<div class="context-menu-item" id="view-connections">View Connections</div>
+<div class="context-menu-item" id="process-details">Details</div>
+</div>
+
+<div class="modal" id="schedule-modal">
+<div class="modal-content">
+    <div class="modal-header">Schedule Task</div>
+    <div class="modal-body">
+        <div class="form-group">
+            <label>Process Command:</label>
+            <input type="text" id="schedule-command" readonly>
+        </div>
+        <div class="form-group">
+            <label>Minute (0-59, * for every minute):</label>
+            <input type="text" id="schedule-minute" placeholder="*" value="*">
+        </div>
+        <div class="form-group">
+            <label>Hour (0-23, * for every hour):</label>
+            <input type="text" id="schedule-hour" placeholder="*" value="*">
+        </div>
+        <div class="form-group">
+            <label>Day of Month (1-31, * for every day):</label>
+            <input type="text" id="schedule-day" placeholder="*" value="*">
+        </div>
+        <div class="form-group">
+            <label>Month (1-12, * for every month):</label>
+            <input type="text" id="schedule-month" placeholder="*" value="*">
+        </div>
+        <div class="form-group">
+            <label>Day of Week (0-6, 0=Sunday, * for every day):</label>
+            <input type="text" id="schedule-dow" placeholder="*" value="*">
+        </div>
+    </div>
+    <div class="modal-footer">
+        <button class="btn" id="schedule-cancel">Cancel</button>
+        <button class="btn" id="schedule-confirm">Confirm</button>
+    </div>
+</div>
+</div>
+
+<div class="modal" id="files-modal">
+<div class="modal-content">
+    <div class="modal-header">Open Files - PID: <span id="files-pid"></span></div>
+    <div class="modal-body">
+        <div class="file-list" id="file-list">
+            <p>Loading...</p>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <button class="btn" id="files-close">Close</button>
+    </div>
+</div>
+</div>
+
+<div class="modal" id="connections-modal">
+<div class="modal-content">
+    <div class="modal-header">Network Connections - PID: <span id="connections-pid"></span></div>
+    <div class="modal-body">
+        <div class="file-list" id="connections-list">
+            <p>Loading...</p>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <button class="btn" id="connections-close">Close</button>
+    </div>
+</div>
+</div>
+
+<div class="modal" id="limits-modal">
+<div class="modal-content">
+    <div class="modal-header">Limit Resources - PID: <span id="limits-pid"></span></div>
+    <div class="modal-body">
+        <div class="form-group">
+            <label>CPU Limit (%, 0 = no limit):</label>
+            <input type="number" id="limit-cpu" placeholder="100" min="0" max="100">
+        </div>
+        <div class="form-group">
+            <label>Network Download Limit (KB/s, 0 = no limit):</label>
+            <input type="number" id="limit-download" placeholder="0" min="0">
+        </div>
+        <div class="form-group">
+            <label>Network Upload Limit (KB/s, 0 = no limit):</label>
+            <input type="number" id="limit-upload" placeholder="0" min="0">
+        </div>
+        <p style="font-size: 12px; color: #999; margin-top: 10px;">Note: Requires root privileges. Limits are applied using cgroups.</p>
+    </div>
+    <div class="modal-footer">
+        <button class="btn" id="limits-cancel">Cancel</button>
+        <button class="btn" id="limits-confirm">Apply Limits</button>
+    </div>
+</div>
+</div>
+
+<script>
+const { exec } = require('child_process');
+const os = require('os');
+const fs = require('fs');
+
+let processes = [];
+let filteredProcesses = [];
+let selectedPID = null;
+let sortColumn = 'cpu';
+let sortDirection = -1;
+let totalRAM = 1;
+let totalGPU = 0;
+let isWindowVisible = true;
+let updateIntervals = [];
+let allServices = [];
+let serviceStates = {};
+let selectedLogEntry = null;
+let currentServiceScrollPos = 0;
+let historyData = {
+    cpu: [], memory: [], networkDown: [], networkUp: [], temp: []
+};
+const maxHistoryPoints = 60;
+
+function initCharts() {
+    drawChart('cpu-chart', historyData.cpu, '#4ec9b0', 100, '%');
+    drawChart('memory-chart', historyData.memory, '#0e639c', 100, '%');
+    drawChart('network-down-chart', historyData.networkDown, '#c586c0', null, 'KB/s');
+    drawChart('network-up-chart', historyData.networkUp, '#ce9178', null, 'KB/s');
+    drawChart('temp-chart', historyData.temp, '#d16969', 100, '°C');
+}
+
+function drawChart(canvasId, data, color, maxValue, unit) {
+    const canvas = document.getElementById(canvasId);
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const dpr = window.devicePixelRatio || 1;
+    const rect = canvas.getBoundingClientRect();
+    canvas.width = rect.width * dpr;
+    canvas.height = rect.height * dpr;
+    ctx.scale(dpr, dpr);
+
+    // Padding settings
+    const paddingLeft = 40;
+    const paddingRight = 20;
+    const paddingTop = 40;
+    const paddingBottom = 40;
+
+    const width = rect.width;
+    const height = rect.height;
+    const chartWidth = width - paddingLeft - paddingRight;
+    const chartHeight = height - paddingTop - paddingBottom;
+
+    ctx.clearRect(0, 0, width, height);
+    if (data.length < 2) return;
+
+    const max = maxValue || Math.max(...data, 1);
+    const step = chartWidth / (maxHistoryPoints - 1);
+    canvas.dataPoints = [];
+
+    // Grid lines and labels
+    ctx.strokeStyle = '#3e3e42';
+    ctx.fillStyle = '#999';
+    ctx.font = '11px sans-serif';
+    ctx.lineWidth = 1;
+
+    for (let i = 0; i <= 4; i++) {
+        const y = paddingTop + (chartHeight / 4) * i;
+        const value = max - (max / 4) * i;
+        ctx.beginPath();
+        ctx.moveTo(paddingLeft, y);
+        ctx.lineTo(width - paddingRight, y);
+        ctx.stroke();
+        ctx.fillText(value.toFixed(1), 2, y + 4);
+    }
+
+    // Line
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+
+    data.forEach((value, i) => {
+        value=Math.abs(value);
+        const x = paddingLeft + i * step;
+        const y = paddingTop + chartHeight - (value / max) * chartHeight;
+        canvas.dataPoints.push({ x, y, value, index: i });
+        if (i === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+    });
+
+    ctx.stroke();
+
+    // Fill under line
+    ctx.lineTo(paddingLeft + chartWidth, paddingTop + chartHeight);
+    ctx.lineTo(paddingLeft, paddingTop + chartHeight);
+    ctx.closePath();
+    ctx.fillStyle = color + '20';
+    ctx.fill();
+
+    // Last value label
+    if (data.length > 0) {
+        const lastValue = data[data.length - 1];
+        const lastX = paddingLeft + (data.length - 1) * step;
+        const lastY = paddingTop + chartHeight - (lastValue / max) * chartHeight;
+
+        ctx.font = 'bold 12px sans-serif';
+        const label = lastValue.toFixed(1) + (unit || '');
+        const labelWidth = ctx.measureText(label).width;
+        const labelX = Math.min(lastX - labelWidth / 2, width - labelWidth - paddingRight - 8); // prevent overflow
+        const labelY = lastY - 10;
+
+        ctx.fillStyle = 'rgba(37, 37, 38, 0.8)';
+        ctx.fillRect(labelX - 4, labelY - 12, labelWidth + 8, 16);
+        ctx.fillStyle = color;
+        ctx.fillText(label, labelX, labelY);
+    }
+
+    setupChartHover(canvas, canvasId, unit);
+}
+
+
+function setupChartHover(canvas, canvasId, unit) {
+    const tooltip = document.getElementById(canvasId.replace('-chart', '-tooltip'));
+    if (!tooltip) return;
+    canvas.addEventListener('mousemove', (e) => {
+        const rect = canvas.getBoundingClientRect();
+        const mouseX = e.clientX - rect.left;
+        const mouseY = e.clientY - rect.top;
+        let closestPoint = null, minDist = Infinity;
+        if (canvas.dataPoints) {
+            canvas.dataPoints.forEach(point => {
+                const dist = Math.sqrt(Math.pow(mouseX - point.x, 2) + Math.pow(mouseY - point.y, 2));
+                if (dist < minDist && dist < 20) {
+                    minDist = dist;
+                    closestPoint = point;
+                }
+            });
+        }
+        if (closestPoint) {
+            tooltip.style.display = 'block';
+            tooltip.style.left = (e.clientX - rect.left + 15) + 'px';
+            tooltip.style.top = (e.clientY - rect.top - 30) + 'px';
+            tooltip.textContent = `Value: ${closestPoint.value.toFixed(2)}${unit || ''}`;
+        } else {
+            tooltip.style.display = 'none';
+        }
+    });
+    canvas.addEventListener('mouseleave', () => tooltip.style.display = 'none');
+}
+
+function getCPUUsage(callback) {
+    exec("top -bn2 -d 0.5 | grep 'Cpu(s)' | tail -1 | awk '{print $2}' | cut -d'%' -f1", (err, stdout) => {
+        callback(err ? 0 : parseFloat(stdout) || 0);
+    });
+}
+
+function getMemoryUsage(callback) {
+    exec("free -m | grep Mem | awk '{print $3,$2}'", (err, stdout) => {
+        if (err) return callback({ used: 0, total: 1, percent: 0 });
+        const parts = stdout.trim().split(' ');
+        const used = parseInt(parts[0]), total = parseInt(parts[1]);
+        totalRAM = total;
+        callback({ used: used / 1024, total: total / 1024, percent: (used / total) * 100 });
+    });
+}
+
+function getDiskUsage(callback) {
+    exec("df -h / | tail -1 | awk '{print $3,$2,$5}'", (err, stdout) => {
+        if (err) return callback({ used: '0G', total: '0G', percent: 0 });
+        const parts = stdout.trim().split(' ');
+        callback({ used: parts[0], total: parts[1], percent: parseInt(parts[2]) });
+    });
+}
+
+function getNetworkUsage(callback) {
+    exec("cat /proc/net/dev | grep -E 'eth0|wlan0|enp|wlp' | head -1 | awk '{print $2,$10}'", (err, stdout) => {
+        if (err) return callback({ down: 0, up: 0 });
+        const parts = stdout.trim().split(' ');
+        const rx = parseInt(parts[0]) || 0, tx = parseInt(parts[1]) || 0;
+        if (!getNetworkUsage.lastRx) {
+            getNetworkUsage.lastRx = rx;
+            getNetworkUsage.lastTx = tx;
+            getNetworkUsage.lastTime = Date.now();
+            return callback({ down: 0, up: 0 });
+        }
+        const timeDiff = (Date.now() - getNetworkUsage.lastTime) / 1000;
+        const rxDiff = (rx - getNetworkUsage.lastRx) / timeDiff / 1024;
+        const txDiff = (tx - getNetworkUsage.lastTx) / timeDiff / 1024;
+        getNetworkUsage.lastRx = rx;
+        getNetworkUsage.lastTx = tx;
+        getNetworkUsage.lastTime = Date.now();
+        callback({ down: rxDiff, up: txDiff });
+    });
+}
+
+function getTemperature(callback) {
+    const cmd = `cat /sys/class/thermal/thermal_zone0/temp 2>/dev/null || 
+    sensors | grep -E '^(Core|Package|Tdie|Tctl)' | head -n1 | 
+    awk '{print $2}' | tr -d '+°C'
+    `;
+
+    exec(cmd, (err, stdout) => {
+        if (err || !stdout) return callback(0);
+
+        let temp = parseFloat(stdout.trim());
+        if (isNaN(temp)) return callback(0);
+
+        // Convert millidegrees to degrees if necessary
+        if (temp > 1000) temp = temp / 1000;
+        callback(temp);
+    });
+}
+//------------------START Version 1 of reading CPU usage------------------
+// let prevTotalJiffies = 0;
+// let prevProcJiffies = {};
+
+// // Helper to read UID → username
+// function getUsername(uid) {
+//     const passwd = fs.readFileSync('/etc/passwd', 'utf8').split('\n');
+//     for (let line of passwd) {
+//         const parts = line.split(':');
+//         if (parseInt(parts[2]) === uid) return parts[0];
+//     }
+//     return uid.toString();
+// }
+
+// // Helper to read total CPU jiffies from /proc/stat
+// function readTotalJiffies() {
+//     const stat = fs.readFileSync('/proc/stat', 'utf8').split('\n')[0]; // first line: cpu ...
+//     const parts = stat.trim().split(/\s+/).slice(1); // skip "cpu"
+//     return parts.reduce((acc, val) => acc + parseInt(val), 0);
+// }
+
+// // Helper to read per-process CPU jiffies
+// function readProcJiffies(pid) {
+//     const stat = fs.readFileSync(`/proc/${pid}/stat`, 'utf8').trim().split(' ');
+//     const utime = parseInt(stat[13]); // user mode
+//     const stime = parseInt(stat[14]); // kernel mode
+//     return utime + stime;
+// }
+
+// // Main function
+// function getProcesses(callback) {
+//     const procDir = '/proc';
+//     const files = fs.readdirSync(procDir);
+//     const pids = files.filter(f => /^\d+$/.test(f));
+
+//     const totalJiffiesStart = readTotalJiffies();
+//     const procs = [];
+
+//     pids.forEach(pid => {
+//         try {
+//             const status = fs.readFileSync(`/proc/${pid}/status`, 'utf8');
+//             const uidLine = status.split('\n').find(l => l.startsWith('Uid:'));
+//             const uid = parseInt(uidLine.split(/\s+/)[1]);
+//             const user = getUsername(uid);
+
+//             const stat = fs.readFileSync(`/proc/${pid}/stat`, 'utf8').trim().split(' ');
+//             const vsize = parseInt(stat[22]); // virtual memory bytes
+//             const rssPages = parseInt(stat[23]);
+//             const rssMB = (rssPages * 4096) / 1024 / 1024; // assuming 4K pages
+
+//             let cmdline = fs.readFileSync(`/proc/${pid}/cmdline`, 'utf8').replace(/\0/g, ' ').trim();
+//             if (!cmdline) cmdline = stat[1].replace(/\(|\)/g, '');
+//             let shortName = cmdline.split(' ')[0];
+//             if (shortName.includes('/')) shortName = shortName.split('/').pop();
+//             shortName = shortName.replace(/\.bin$/, '').replace(/\.exe$/, '');
+
+//             procs.push({
+//                 pid: parseInt(pid),
+//                 user,
+//                 cpu: 0,          // will compute after interval
+//                 memory: vsize / (1024 * 1024),
+//                 memoryMB: rssMB,
+//                 gpu: 0,
+//                 vram: 0,
+//                 name: shortName,
+//                 fullCommand: cmdline
+//             });
+//         } catch (e) {
+//             // process may have exited, skip
+//         }
+//     });
+
+//     // Wait 1 second to calculate CPU %
+//     setTimeout(() => {
+//         const totalJiffiesEnd = readTotalJiffies();
+//         const totalDiff = totalJiffiesEnd - totalJiffiesStart;
+
+//         procs.forEach(proc => {
+//             try {
+//                 const procJiffiesEnd = readProcJiffies(proc.pid);
+//                 const procJiffiesStart = prevProcJiffies[proc.pid] || procJiffiesEnd;
+//                 proc.cpu = ((procJiffiesEnd - procJiffiesStart) / totalDiff) * 100;
+//                 prevProcJiffies[proc.pid] = procJiffiesEnd;
+//             } catch (e) {
+//                 proc.cpu = 0;
+//             }
+//         });
+
+//         // Sort by CPU descending and keep top 100
+//         procs.sort((a, b) => b.cpu - a.cpu);
+//         const topProcs = procs.slice(0, 100);
+
+//         // Attach GPU info if available
+//         getGPUUsage((gpuData) => {
+//             topProcs.forEach(proc => {
+//                 if (gpuData[proc.pid]) {
+//                     proc.gpu = gpuData[proc.pid].usage;
+//                     proc.vram = gpuData[proc.pid].vram;
+//                 }
+//             });
+//             callback(topProcs);
+//         });
+//     }, 1000);
+// }   
+//------------------END Version 1 of reading CPU usage------------------
+//------------------START Version 2 of reading CPU usage------------------
+function getProcesses(callback) {
+    exec("ps aux --sort=-%cpu | head -100", (err, stdout) => {
+        if (err) return callback([]);
+        const lines = stdout.trim().split('\n').slice(1);
+        const procs = lines.map(line => {
+            const parts = line.trim().split(/\s+/);
+            const fullCommand = parts.slice(10).join(' ');
+            let shortName = fullCommand;
+            const executable = fullCommand.split(' ')[0];
+            if (executable.includes('/')) shortName = executable.split('/').pop();
+            else shortName = executable;
+            shortName = shortName.replace(/\.bin$/, '').replace(/\.exe$/, '');
+            return {
+                user: parts[0], pid: parseInt(parts[1]), cpu: parseFloat(parts[2]),
+                memory: parseFloat(parts[3]), memoryMB: parseFloat(parts[5]) / 1024,
+                gpu: 0, vram: 0, name: shortName, fullCommand: fullCommand
+            };
+        });
+        getGPUUsage((gpuData) => {
+            // procs.forEach(proc => {
+            //     if (gpuData[proc.pid]) {
+            //         proc.gpu = gpuData[proc.pid].usage;
+            //         proc.vram = gpuData[proc.pid].vram;
+            //     }
+            // });
+            callback(procs);
+        });
+    });
+}
+//------------------START Version 2 of reading CPU usage------------------
+
+function getGPUUsage(callback) {
+    const gpuData = {};
+    let totalUsage = 0;
+    let gpuCount = 0;
+    let completedChecks = 0;
+    function checkComplete() {
+        completedChecks++;
+        if (completedChecks === 3) {
+            totalGPU = gpuCount > 0 ? totalUsage / gpuCount : 0;
+            callback(gpuData);
+        }
+    }
+    exec("nvidia-smi --query-compute-apps=pid,used_memory --format=csv,noheader,nounits 2>/dev/null", (err, stdout) => {
+        if (!err && stdout) {
+            stdout.trim().split('\n').forEach(line => {
+                const parts = line.split(',').map(p => p.trim());
+                if (parts.length >= 2) {
+                    const pid = parseInt(parts[0]), vramMB = parseFloat(parts[1]);
+                    if (!gpuData[pid]) gpuData[pid] = { usage: 0, vram: 0 };
+                    gpuData[pid].vram = vramMB;
+                    const usage = Math.min((vramMB / 1024) * 10, 100);
+                    gpuData[pid].usage = usage;
+                    totalUsage += usage;
+                    gpuCount++;
+                }
+            });
+        }
+        checkComplete();
+    });
+    exec("timeout 0.5 intel_gpu_top -l -s 100 2>/dev/null | grep -E '^[0-9]' | head -20", (err, stdout) => {
+        if (!err && stdout) {
+            stdout.trim().split('\n').forEach(line => {
+                const parts = line.trim().split(/\s+/);
+                if (parts.length >= 2) {
+                    const pid = parseInt(parts[0]), usage = parseFloat(parts[1]);
+                    if (!isNaN(pid) && !isNaN(usage)) {
+                        if (!gpuData[pid]) gpuData[pid] = { usage: 0, vram: 0 };
+                        gpuData[pid].usage = Math.max(gpuData[pid].usage, usage);
+                        totalUsage += usage;
+                        gpuCount++;
+                    }
+                }
+            });
+        }
+        checkComplete();
+    });
+    exec("cat /sys/kernel/debug/dri/0/amdgpu_gem_info 2>/dev/null | grep -E 'pid|VRAM'", (err, stdout) => {
+        if (!err && stdout) {
+            const lines = stdout.split('\n');
+            let currentPid = null;
+            lines.forEach(line => {
+                const pidMatch = line.match(/pid\s+(\d+)/);
+                if (pidMatch) currentPid = parseInt(pidMatch[1]);
+                const vramMatch = line.match(/VRAM:\s+(\d+)\s+KiB/);
+                if (vramMatch && currentPid) {
+                    const vramMB = parseInt(vramMatch[1]) / 1024;
+                    if (!gpuData[currentPid]) gpuData[currentPid] = { usage: 0, vram: 0 };
+                    gpuData[currentPid].vram = Math.max(gpuData[currentPid].vram, vramMB);
+                    const usage = Math.min((vramMB / 1024) * 15, 100);
+                    gpuData[currentPid].usage = Math.max(gpuData[currentPid].usage, usage);
+                    totalUsage += usage;
+                    gpuCount++;
+                }
+            });
+        }
+        checkComplete();
+    });
+}
+
+function killProcess(pid) {
+    if (!confirm(`Kill process ${pid}?`)) return;
+    exec(`kill -9 ${pid}`, (err) => {
+        alert(err ? `Failed: ${err.message}` : `Process ${pid} terminated`);
+        if (!err) refreshProcesses();
+    });
+}
+
+function getCPUColor(p) {
+    if (p < 25) return 'rgba(78, 201, 176, 0.1)';
+    if (p < 50) return 'rgba(255, 160, 159, 0.1)';
+    if (p < 75) return 'rgba(214, 157, 133, 0.3)';
+    return 'rgba(197, 42, 42, 0.5)';
+}
+
+function getMemoryColor(mb) {
+    const p = (mb / totalRAM) * 100;
+    if (p < 1) return 'rgba(78, 201, 176, 0.1)';
+    if (p < 5) return 'rgba(255, 160, 159, 0.1)';
+    if (p < 10) return 'rgba(214, 157, 133, 0.3)';
+    return 'rgba(197, 42, 42, 0.5)';
+}
+
+function updateSystemStats() {
+    getCPUUsage(cpu => {
+        document.getElementById('cpu-stat').textContent = cpu.toFixed(1) + '%';
+        historyData.cpu.push(cpu);
+    });
+    getMemoryUsage(mem => {
+        document.getElementById('memory-stat').textContent = mem.percent.toFixed(1) + '%';
+        document.getElementById('memory-detail').textContent = `${mem.used.toFixed(1)}/${mem.total.toFixed(1)} GB`;
+        historyData.memory.push(mem.percent);
+    });
+    getDiskUsage(disk => {
+        document.getElementById('disk-stat').textContent = disk.percent + '%';
+        document.getElementById('disk-detail').textContent = `${disk.used}/${disk.total}`;
+    });
+    getNetworkUsage(net => {
+        document.getElementById('network-stat').textContent = `↓ ${net.down.toFixed(1)} KB/s`;
+        document.getElementById('network-upload').textContent = `↑ ${net.up.toFixed(1)} KB/s`;
+        historyData.networkDown.push(net.down);
+        historyData.networkUp.push(net.up);
+    });
+    getTemperature(temp => {
+        document.getElementById('temp-stat').textContent = temp + '°C';
+        historyData.temp.push(temp);
+    });
+    document.getElementById('gpu-stat').textContent = totalGPU.toFixed(1) + '%';
+    if (historyData.cpu.length > maxHistoryPoints) {
+        historyData.cpu.shift();
+        historyData.memory.shift();
+        historyData.networkDown.shift();
+        historyData.networkUp.shift();
+        historyData.temp.shift();
+    }
+    if (!document.getElementById('performance-view').classList.contains('hidden')) initCharts();
+}
+
+function refreshProcesses() {
+    if (!isWindowVisible) return;
+    getProcesses(procs => {
+        processes = procs;
+        applySearch();
+    });
+    updateSystemStats();
+}
+
+function applySearch() {
+    const term = document.getElementById('process-search').value.toLowerCase();
+    filteredProcesses = term ? processes.filter(p => 
+        p.name.toLowerCase().includes(term) ||
+        p.pid.toString().includes(term) ||
+        p.user.toLowerCase().includes(term)
+    ) : processes;
+    sortProcesses();
+    renderProcessTable();
+}
+
+function sortProcesses() {
+    filteredProcesses.sort((a, b) => (a[sortColumn] - b[sortColumn]) * sortDirection);
+}
+
+function renderProcessTable() {
+    const tbody = document.getElementById('process-tbody');
+    tbody.innerHTML = filteredProcesses.map(p => `
+        <tr data-pid="${p.pid}" ${selectedPID === p.pid ? 'class="selected"' : ''}>
+            <td>${p.pid}</td>
+            <td title="${p.fullCommand}">${p.name}</td>
+            <td class="cpu-cell" style="background: ${getCPUColor(p.cpu)}">${p.cpu.toFixed(1)}%</td>
+            <td class="memory-cell" style="background: ${getMemoryColor(p.memoryMB)}">${p.memoryMB.toFixed(1)} MB</td>
+            <td class="cpu-cell" style="background: ${getCPUColor(p.gpu)}">${p.gpu.toFixed(1)}%</td>
+            <td class="memory-cell" style="background: ${getMemoryColor(p.vram)}">${p.vram.toFixed(0)} MB</td>
+            <td>${p.user}</td>
+        </tr>
+    `).join('');
+    const btn = document.getElementById('kill-selected-btn');
+    if (btn) btn.disabled = !selectedPID;
+    tbody.querySelectorAll('tr').forEach(tr => {
+        tr.addEventListener('contextmenu', handleContextMenu);
+        tr.addEventListener('click', () => {
+            selectedPID = parseInt(tr.dataset.pid);
+            renderProcessTable();
+        });
+    });
+}
+
+function handleContextMenu(e) {
+    e.preventDefault();
+    selectedPID = parseInt(e.currentTarget.dataset.pid);
+    renderProcessTable();
+    const menu = document.getElementById('context-menu');
+    menu.style.display = 'block';
+    menu.style.left = e.pageX + 'px';
+    menu.style.top = e.pageY + 'px';
+}
+
+document.addEventListener('click', () => document.getElementById('context-menu').style.display = 'none');
+document.getElementById('kill-selected-btn').addEventListener('click', () => { if (selectedPID) killProcess(selectedPID); });
+document.getElementById('kill-process').addEventListener('click', () => { if (selectedPID) killProcess(selectedPID); });
+
+document.getElementById('schedule-process').addEventListener('click', () => {
+    if (!selectedPID) return;
+    const proc = processes.find(p => p.pid === selectedPID);
+    if (proc) {
+        document.getElementById('schedule-command').value = proc.fullCommand;
+        document.getElementById('schedule-modal').classList.add('show');
+    }
+});
+
+document.getElementById('schedule-cancel').addEventListener('click', () => {
+    document.getElementById('schedule-modal').classList.remove('show');
+});
+
+document.getElementById('schedule-confirm').addEventListener('click', () => {
+    const cmd = document.getElementById('schedule-command').value;
+    const min = document.getElementById('schedule-minute').value || '*';
+    const hr = document.getElementById('schedule-hour').value || '*';
+    const day = document.getElementById('schedule-day').value || '*';
+    const mon = document.getElementById('schedule-month').value || '*';
+    const dow = document.getElementById('schedule-dow').value || '*';
+    const cronLine = `${min} ${hr} ${day} ${mon} ${dow} ${cmd}`;
+    exec(`(crontab -l 2>/dev/null; echo "${cronLine}") | crontab -`, (err) => {
+        alert(err ? `Failed: ${err.message}` : `Scheduled!\n\n${cronLine}`);
+        if (!err) document.getElementById('schedule-modal').classList.remove('show');
+    });
+});
+
+document.getElementById('startup-process').addEventListener('click', () => {
+    if (!selectedPID) return;
+    const proc = processes.find(p => p.pid === selectedPID);
+    if (proc) {
+        const entry = `[Desktop Entry]\nType=Application\nName=${proc.name}\nExec=${proc.fullCommand}\nTerminal=false\nX-GNOME-Autostart-enabled=true`;
+        const dir = os.homedir() + '/.config/autostart';
+        const file = `${dir}/${proc.name}-${Date.now()}.desktop`;
+        exec(`mkdir -p "${dir}"`, (err) => {
+            if (err) return alert(`Failed: ${err.message}`);
+            fs.writeFile(file, entry, (err) => {
+                alert(err ? `Failed: ${err.message}` : `Added ${proc.name} to startup!`);
+                if (!err) loadStartupApps();
+            });
+        });
+    }
+});
+
+document.getElementById('view-files').addEventListener('click', () => {
+    if (!selectedPID) return;
+    document.getElementById('files-pid').textContent = selectedPID;
+    document.getElementById('files-modal').classList.add('show');
+    document.getElementById('file-list').innerHTML = '<p>Loading...</p>';
+    exec(`lsof -p ${selectedPID} 2>/dev/null`, (err, stdout) => {
+        const list = document.getElementById('file-list');
+        if (err || !stdout) return list.innerHTML = '<p>No files found or insufficient permissions.</p>';
+        const lines = stdout.trim().split('\n').slice(1);
+        if (lines.length === 0) return list.innerHTML = '<p>No open files found.</p>';
+        list.innerHTML = lines.map(line => {
+            const file = line.trim().split(/\s+/).slice(8).join(' ');
+            return `<div class="file-item">${file}</div>`;
+        }).join('');
+    });
+});
+
+document.getElementById('files-close').addEventListener('click', () => {
+    document.getElementById('files-modal').classList.remove('show');
+});
+
+document.getElementById('view-connections').addEventListener('click', () => {
+    if (!selectedPID) return;
+    document.getElementById('connections-pid').textContent = selectedPID;
+    document.getElementById('connections-modal').classList.add('show');
+    document.getElementById('connections-list').innerHTML = '<p>Loading...</p>';
+    exec(`lsof -i -a -p ${selectedPID} 2>/dev/null`, (err, stdout) => {
+        const list = document.getElementById('connections-list');
+        if (err || !stdout) return list.innerHTML = '<p>No connections found.</p>';
+        const lines = stdout.trim().split('\n').slice(1);
+        if (lines.length === 0) return list.innerHTML = '<p>No active connections.</p>';
+        list.innerHTML = lines.map(line => {
+            const conn = line.trim().split(/\s+/).slice(8).join(' ');
+            return `<div class="file-item">${conn}</div>`;
+        }).join('');
+    });
+});
+
+document.getElementById('connections-close').addEventListener('click', () => {
+    document.getElementById('connections-modal').classList.remove('show');
+});
+
+document.getElementById('limit-resources').addEventListener('click', () => {
+    if (!selectedPID) return;
+    document.getElementById('limits-pid').textContent = selectedPID;
+    document.getElementById('limits-modal').classList.add('show');
+});
+
+document.getElementById('limits-cancel').addEventListener('click', () => {
+    document.getElementById('limits-modal').classList.remove('show');
+});
+
+document.getElementById('limits-confirm').addEventListener('click', () => {
+    const pid = selectedPID;
+    const cpuLim = parseInt(document.getElementById('limit-cpu').value) || 0;
+    const downLim = parseInt(document.getElementById('limit-download').value) || 0;
+    const upLim = parseInt(document.getElementById('limit-upload').value) || 0;
+    let cmds = [];
+    const cgroup = `taskmgr_${pid}`;
+    if (cpuLim > 0) {
+        const quota = cpuLim * 100000;
+        cmds.push(`sudo mkdir -p /sys/fs/cgroup/${cgroup}`);
+        cmds.push(`echo ${quota} | sudo tee /sys/fs/cgroup/${cgroup}/cpu.max`);
+        cmds.push(`echo ${pid} | sudo tee /sys/fs/cgroup/${cgroup}/cgroup.procs`);
+    }
+    if (downLim > 0 || upLim > 0) {
+        const iface = 'eth0';
+        if (downLim > 0) {
+            cmds.push(`sudo tc qdisc add dev ${iface} root handle 1: htb default 10`);
+            cmds.push(`sudo tc class add dev ${iface} parent 1: classid 1:1 htb rate ${downLim}kbit`);
+            cmds.push(`sudo tc filter add dev ${iface} protocol ip parent 1:0 prio 1 u32 match ip dst 0.0.0.0/0 flowid 1:1`);
+        }
+    }
+    if (cmds.length === 0) return alert('Specify at least one limit.');
+    exec(cmds.join(' && '), (err) => {
+        alert(err ? `Failed: ${err.message}\n\nRequires root.` : 'Limits applied!');
+        if (!err) document.getElementById('limits-modal').classList.remove('show');
+    });
+});
+
+document.getElementById('process-details').addEventListener('click', () => {
+    if (!selectedPID) return;
+    const p = processes.find(x => x.pid === selectedPID);
+    if (p) alert(`PID: ${p.pid}\nName: ${p.name}\nCommand: ${p.fullCommand}\nCPU: ${p.cpu}%\nMemory: ${p.memoryMB.toFixed(1)} MB\nGPU: ${p.gpu.toFixed(1)}%\nVRAM: ${p.vram.toFixed(0)} MB\nUser: ${p.user}`);
+});
+
+document.querySelectorAll('th[data-sort]').forEach(th => {
+    th.addEventListener('click', () => {
+        const col = th.dataset.sort;
+        if (sortColumn === col) sortDirection *= -1;
+        else { sortColumn = col; sortDirection = -1; }
+        sortProcesses();
+        renderProcessTable();
+    });
+});
+
+document.getElementById('process-search').addEventListener('input', applySearch);
+
+document.querySelectorAll('.sidebar-item').forEach(item => {
+    item.addEventListener('click', () => {
+        document.querySelectorAll('.sidebar-item').forEach(i => i.classList.remove('active'));
+        item.classList.add('active');
+        const view = item.dataset.view;
+        document.getElementById('processes-view').classList.toggle('hidden', view !== 'processes');
+        document.getElementById('performance-view').classList.toggle('hidden', view !== 'performance');
+        document.getElementById('startup-view').classList.toggle('hidden', view !== 'startup');
+        document.getElementById('crontab-view').classList.toggle('hidden', view !== 'crontab');
+        document.getElementById('services-view').classList.toggle('hidden', view !== 'services');
+        document.getElementById('logs-view').classList.toggle('hidden', view !== 'logs');
+        document.getElementById('network-view').classList.toggle('hidden', view !== 'network');
+        if (view === 'performance') setTimeout(() => initCharts(), 100);
+        else if (view === 'startup') loadStartupApps();
+        else if (view === 'crontab') loadUsers();
+        else if (view === 'services') loadServices();
+        else if (view === 'logs') loadSystemLogs();
+        else if (view === 'network') loadNetworkConnections();
+    });
+});
+
+function loadStartupApps() {
+    const list = document.getElementById('startup-list');
+    list.innerHTML = '<p style="text-align: center; padding: 20px;">Loading...</p>';
+    const dir = os.homedir() + '/.config/autostart';
+    exec(`mkdir -p "${dir}" && find "${dir}" -name '*.desktop' 2>/dev/null`, (err, stdout) => {
+        if (err || !stdout.trim()) return list.innerHTML = '<p style="text-align: center; padding: 20px;">No startup apps.</p>';
+        const files = stdout.trim().split('\n').filter(f => f);
+        if (files.length === 0) return list.innerHTML = '<p style="text-align: center; padding: 20px;">No startup apps.</p>';
+        let html = '', done = 0;
+        files.forEach(file => {
+            fs.readFile(file, 'utf8', (err, content) => {
+                done++;
+                if (!err && content) {
+                    const nameMatch = content.match(/Name=(.+)/);
+                    const execMatch = content.match(/Exec=(.+)/);
+                    const name = nameMatch ? nameMatch[1] : file.split('/').pop();
+                    const cmd = execMatch ? execMatch[1] : 'Unknown';
+                    html += `<div class="startup-item"><div class="startup-item-info"><div class="startup-item-name">${name}</div><div class="startup-item-command">${cmd}</div></div><button class="btn btn-danger btn-small" onclick="removeStartupApp('${file.replace(/'/g, "\\'")}')">Remove</button></div>`;
+                }
+                if (done === files.length) list.innerHTML = html || '<p style="text-align: center; padding: 20px;">No startup apps.</p>';
+            });
+        });
+    });
+}
+
+window.removeStartupApp = function(file) {
+    if (!confirm('Remove startup app?')) return;
+    fs.unlink(file, (err) => {
+        alert(err ? `Failed: ${err.message}` : 'Removed!');
+        if (!err) loadStartupApps();
+    });
+};
+
+function loadUsers() {
+    exec("cut -d: -f1 /etc/passwd | sort", (err, stdout) => {
+        const sel = document.getElementById('cron-user-select');
+        if (err || !stdout) return sel.innerHTML = '<option value="">No users</option>';
+        const users = stdout.trim().split('\n');
+        sel.innerHTML = users.map(u => `<option value="${u}">${u}</option>`).join('');
+        const curr = os.userInfo().username;
+        sel.value = curr;
+        loadCrontab(curr);
+    });
+}
+
+document.getElementById('cron-user-select').addEventListener('change', (e) => loadCrontab(e.target.value));
+
+function loadCrontab(user) {
+    const list = document.getElementById('cron-list');
+    list.innerHTML = '<p style="text-align: center; padding: 20px;">Loading...</p>';
+    exec(`crontab -u ${user} -l 2>/dev/null`, (err, stdout) => {
+        if (err || !stdout) return list.innerHTML = '<p style="text-align: center; padding: 20px;">No cron jobs.</p>';
+        const lines = stdout.trim().split('\n').filter(l => l && !l.startsWith('#'));
+        if (lines.length === 0) return list.innerHTML = '<p style="text-align: center; padding: 20px;">No cron jobs.</p>';
+        list.innerHTML = lines.map((line, idx) => {
+            const parts = line.split(/\s+/);
+            const sched = parts.slice(0, 5).join(' ');
+            const cmd = parts.slice(5).join(' ');
+            return `<div class="cron-item"><div class="cron-item-info"><div class="cron-item-schedule">${sched}</div><div class="cron-item-command">${cmd}</div></div><button class="btn btn-danger btn-small" onclick="removeCronJob('${user}', ${idx})">Remove</button></div>`;
+        }).join('');
+    });
+}
+
+window.removeCronJob = function(user, idx) {
+    if (!confirm('Remove cron job?')) return;
+    exec(`crontab -u ${user} -l 2>/dev/null`, (err, stdout) => {
+        if (err) return alert('Failed to load crontab');
+        const lines = stdout.trim().split('\n').filter(l => l && !l.startsWith('#'));
+        lines.splice(idx, 1);
+        exec(`echo "${lines.join('\n')}" | crontab -u ${user} -`, (err) => {
+            alert(err ? `Failed: ${err.message}` : 'Removed!');
+            if (!err) loadCrontab(user);
+        });
+    });
+};
+
+function loadServices() {
+    const list = document.getElementById('services-list');
+    const container = list.parentElement;
+    currentServiceScrollPos = container.scrollTop;
+    list.innerHTML = '<p style="text-align: center; padding: 20px;">Loading...</p>';
+    exec("systemctl list-units --type=service --all --no-pager --plain", (err, stdout) => {
+        if (err || !stdout) return list.innerHTML = '<p style="text-align: center; padding: 20px;">Failed to load.</p>';
+        exec("systemctl list-unit-files --type=service --no-pager | grep -E 'enabled|disabled'", (err2, stdout2) => {
+            if (!err2 && stdout2) {
+                stdout2.trim().split('\n').forEach(line => {
+                    const parts = line.trim().split(/\s+/);
+                    if (parts.length >= 2) {
+                        serviceStates[parts[0]] = parts[1];
+                    }
+                });
+            }
+            const lines = stdout.trim().split('\n').slice(1);
+            allServices = lines.map(line => {
+                const match = line.match(/^(\S+\.service)\s+(\S+)\s+(\S+)\s+(\S+)\s+(.*)$/);
+                return match ? { name: match[1], load: match[2], active: match[3], sub: match[4], description: match[5] } : null;
+            }).filter(s => s && s.name);
+            renderServices(allServices);
+            setTimeout(() => container.scrollTop = currentServiceScrollPos, 50);
+        });
+    });
+}
+
+document.getElementById('service-search').addEventListener('input', (e) => {
+    const term = e.target.value.toLowerCase();
+    renderServices(allServices.filter(s => s.name.toLowerCase().includes(term) || s.description.toLowerCase().includes(term)));
+});
+
+function renderServices(services) {
+    const list = document.getElementById('services-list');
+    if (services.length === 0) return list.innerHTML = '<p style="text-align: center; padding: 20px;">No services found.</p>';
+    list.innerHTML = services.map(s => {
+        const status = s.active === 'active' ? 'active' : s.active === 'failed' ? 'failed' : 'inactive';
+        const isEnabled = serviceStates[s.name] === 'enabled';
+        const enableClass = isEnabled ? 'enabled' : 'disabled';
+        return `<div class="service-item"><div class="service-item-info"><div class="service-item-name">${s.name}</div><div class="service-item-status ${status}">${s.active} • ${s.sub}</div><div class="cron-item-command">${s.description}</div></div><div class="service-actions"><button class="btn btn-small" onclick="serviceAction('start', '${s.name}')">Start</button><button class="btn btn-small" onclick="serviceAction('stop', '${s.name}')">Stop</button><button class="btn btn-small" onclick="serviceAction('restart', '${s.name}')">Restart</button><button class="btn btn-small ${enableClass}" onclick="serviceAction('${isEnabled ? 'disable' : 'enable'}', '${s.name}')">${isEnabled ? 'Disable' : 'Enable'}</button></div></div>`;
+    }).join('');
+}
+
+window.serviceAction = function(action, name) {
+    if (!confirm(`${action} ${name}?`)) return;
+    const container = document.getElementById('services-list').parentElement;
+    currentServiceScrollPos = container.scrollTop;
+    exec(`sudo systemctl ${action} ${name}`, (err, stdout, stderr) => {
+        alert(err ? `Failed: ${stderr || err.message}` : `${action}d ${name}`);
+        if (!err) setTimeout(() => loadServices(), 300);
+    });
+};
+
+function loadSystemLogs() {
+    const list = document.getElementById('logs-list');
+    list.innerHTML = '<p style="text-align: center; padding: 20px;">Loading...</p>';
+    exec("journalctl -n 100 --no-pager -o json", (err, stdout) => {
+        if (err || !stdout) return list.innerHTML = '<p style="text-align: center; padding: 20px;">Failed to load logs.</p>';
+        const lines = stdout.trim().split('\n').filter(l => l);
+        const logs = lines.map(line => {
+            try {
+                return JSON.parse(line);
+            } catch (e) {
+                return null;
+            }
+        }).filter(l => l).reverse();
+        if (logs.length === 0) return list.innerHTML = '<p style="text-align: center; padding: 20px;">No logs found.</p>';
+        list.innerHTML = logs.map((log, idx) => {
+            const app = log.SYSLOG_IDENTIFIER || log._COMM || 'unknown';
+            const msg = log.MESSAGE || '';
+            const time = log.__REALTIME_TIMESTAMP ? new Date(parseInt(log.__REALTIME_TIMESTAMP) / 1000).toLocaleString() : 'N/A';
+            const user = log._UID || 'N/A';
+            return `<div class="log-entry" data-idx="${idx}"><div class="log-entry-header"><span class="log-entry-app">${app}</span><span class="log-entry-time">${time}</span></div><div class="log-entry-message">${msg.substring(0, 100)}</div></div>`;
+        }).join('');
+        document.querySelectorAll('.log-entry').forEach(entry => {
+            entry.addEventListener('click', () => {
+                document.querySelectorAll('.log-entry').forEach(e => e.classList.remove('selected'));
+                entry.classList.add('selected');
+                const idx = parseInt(entry.dataset.idx);
+                const log = logs[idx];
+                const details = document.getElementById('log-details');
+                details.style.display = 'block';
+                details.textContent = JSON.stringify(log, null, 2);
+            });
+        });
+    });
+}
+
+function loadNetworkConnections() {
+    const list = document.getElementById('network-list');
+    list.innerHTML = '<p style="text-align: center; padding: 20px;">Loading...</p>';
+    exec("sudo ss -tupn", (err, stdout) => {
+        if (err || !stdout) return list.innerHTML = '<p style="text-align: center; padding: 20px;">Failed to load. Run with sudo.</p>';
+        const lines = stdout.trim().split('\n').slice(1);
+        if (lines.length === 0) return list.innerHTML = '<p style="text-align: center; padding: 20px;">No connections found.</p>';
+        list.innerHTML = lines.map(line => {
+            const parts = line.trim().split(/\s+/);
+            if (parts.length < 5) return '';
+            const proto = parts[0];
+            const state = parts[1];
+            const local = parts[4];
+            const peer = parts[5];
+            const process = parts[6] || 'N/A';
+            return `<div class="network-entry"><div class="network-entry-header"><span>${proto}</span><span>${state}</span></div><div class="network-entry-details">Local: ${local} → Peer: ${peer}<br>Process: ${process}</div></div>`;
+        }).join('');
+    });
+}
+
+document.getElementById('refresh-network').addEventListener('click', loadNetworkConnections);
+
+window.addEventListener('resize', () => {
+    if (!document.getElementById('performance-view').classList.contains('hidden')) initCharts();
+});
+
+try {
+    const nw_win = nw.Window.get();
+    nw_win.on('minimize', () => { isWindowVisible = false; console.log('Paused'); });
+    nw_win.on('restore', () => { isWindowVisible = true; console.log('Resumed'); updateSystemStats(); refreshProcesses(); });
+    nw_win.on('focus', () => { isWindowVisible = true; });
+} catch (e) {
+    console.log('NW.js events not available:', e);
+}
+
+updateSystemStats();
+refreshProcesses();
+updateIntervals.push(setInterval(() => { if (isWindowVisible) refreshProcesses(); }, 2000));
+</script>
+</body>
+</html>
